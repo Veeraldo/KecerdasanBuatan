@@ -83,7 +83,13 @@ class _HomeScreenState extends State<HomeScreen> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text("Hasil Diagnosa"),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            "Hasil Diagnosa",
+            textAlign: TextAlign.center,
+          ),
           content: Text("Penyakit yang cocok:\n\n${matchedPenyakit.join('\n')}"),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
@@ -96,49 +102,103 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Colors.deepPurple[100],
+            strokeWidth: 5,
+          ),
+        ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Diagnosa Penyakit THT'),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: const Color.fromARGB(255, 207, 180, 253),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: _gejalaList.length,
-              itemBuilder: (context, index) {
-                final gejala = _gejalaList[index];
-                final noGejala = gejala['no'].toString();
-                final namaGejala = gejala['gejala_penyakit'] ?? 'Gejala tidak diketahui';
-
-                return CheckboxListTile(
-                  title: Text('Gejala $noGejala: $namaGejala'),
-                  value: _selectedGejala.contains(noGejala),
-                  onChanged: (bool? value) {
-                    setState(() {
-                      if (value == true) {
-                        _selectedGejala.add(noGejala);
-                      } else {
-                        _selectedGejala.remove(noGejala);
-                      }
-                    });
-                  },
-                );
-              },
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFe0c3fc), Color(0xFF8ec5fc)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: _confirmSelection,
-              child: const Text('Konfirmasi Gejala'),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: _gejalaList.length,
+                itemBuilder: (context, index) {
+                  final gejala = _gejalaList[index];
+                  final noGejala = gejala['no'].toString();
+                  final namaGejala = gejala['gejala_penyakit'] ?? 'Gejala tidak diketahui';
+        
+                  return Card(
+                    elevation: 4,
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 8, 
+                      horizontal: 10
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12, 
+                        vertical: 8
+                      ),
+                      child: CheckboxListTile(
+                        title: Text(
+                          'Gejala $noGejala: $namaGejala',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500
+                          ),
+                        ),
+                        value: _selectedGejala.contains(noGejala),
+                        activeColor: Colors.deepPurple,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            if (value == true) {
+                              _selectedGejala.add(noGejala);
+                            } else {
+                              _selectedGejala.remove(noGejala);
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple[100],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30)
+                    ),
+                    elevation: 5,
+                    textStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold
+                    ),
+                  ),
+                  onPressed: _confirmSelection,
+                  child: const Text('Konfirmasi Gejala'),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
