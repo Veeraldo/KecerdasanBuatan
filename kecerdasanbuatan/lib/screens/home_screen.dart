@@ -20,98 +20,44 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchGejalaAndPenyakit();
   }
 
-  Future<void> fetchGejala() async {
-    final gejalaSnapshot = await _thtServices.gejalaDatabase.get();
-    if (gejalaSnapshot.exists) {
-      final Map<String, dynamic> data = Map<String, dynamic>.from(gejalaSnapshot.value as Map);
-      final Map<String, String> loadedGejala = {};
-      data.forEach((key, value) {
-        if (value is Map) {
-          loadedGejala[key] = value['gejala_penyakit'] ?? '';
-        }
-      });
-      setState(() {
-        _gejalaList = gejalaData;
-        _penyakitList = penyakitData;
-        _isLoading = false;
-      });
-    }
-  }
+  // Mengambil data gejala dan penyakit
+  Future<void> fetchGejalaAndPenyakit() async {
+  try {
+    // Ambil data gejala
+    final gejalaSnapshot = await FirebaseDatabase.instance.ref('gejala').get();
+    final penyakitSnapshot = await FirebaseDatabase.instance.ref('penyakit').get();
 
-  void _confirmSelection() async {
-    final result = await _thtServices.findPenyakitByGejala(_selectedGejala);
+    List<Map<String, dynamic>> gejalaData = [];
+    List<Map<String, dynamic>> penyakitData = [];
 
-    if (result.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Hasil Diagnosa"),
-          content: const Text("Tidak ditemukan penyakit yang cocok."),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
-          ],
-        ),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Hasil Diagnosa"),
-          content: Text("Penyakit yang cocok:\n\n${result.join('\n')}"),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
-          ],
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+    if (gejalaSnapshot.value != null) {
+      final Map<dynamic, dynamic> gejalaDataMap = gejalaSnapshot.value as Map<dynamic, dynamic>;
+      gejalaData = gejalaDataMap.entries.map((entry) {
+        return Map<String, dynamic>.from(entry.value);
+      }).toList();
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Diagnosa Penyakit THT'),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: _gejalaList.map((gejala) {
-                return CheckboxListTile(
-                  title: Text(gejala['gejala_penyakit'] ?? 'Gejala tidak diketahui'),
-                  value: _selectedGejala.contains(gejala['no'].toString()),
-                  onChanged: (bool? value) {
-                    setState(() {
-                      if (value == true) {
-                        _selectedGejala.add(gejala['no'].toString());
-                      } else {
-                        _selectedGejala.remove(gejala['no'].toString());
-                      }
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: _confirmSelection,
-              child: const Text('Konfirmasi Gejala'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+    if (penyakitSnapshot.value != null) {
+      final Map<dynamic, dynamic> penyakitDataMap = penyakitSnapshot.value as Map<dynamic, dynamic>;
+      penyakitData = penyakitDataMap.entries.map((entry) {
+        return Map<String, dynamic>.from(entry.value);
+      }).toList();
+    }
 
-  // Fungsi untuk konfirmasi pemilihan gejala dan menampilkan hasil
+    setState(() {
+      _gejalaList = gejalaData;
+      _penyakitList = penyakitData;
+      _isLoading = false;
+    });
+  } catch (e) {
+    print("Error fetching data: $e");
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
+
+
   void _confirmSelection() {
     List<String> matchedPenyakit = [];
     for (var penyakit in _penyakitList) {
@@ -144,5 +90,55 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Diagnosa Penyakit THT'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _gejalaList.length,
+              itemBuilder: (context, index) {
+                final gejala = _gejalaList[index];
+                final noGejala = gejala['no'].toString();
+                final namaGejala = gejala['gejala_penyakit'] ?? 'Gejala tidak diketahui';
+
+                return CheckboxListTile(
+                  title: Text(namaGejala),
+                  value: _selectedGejala.contains(noGejala),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value == true) {
+                        _selectedGejala.add(noGejala);
+                      } else {
+                        _selectedGejala.remove(noGejala);
+                      }
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: _confirmSelection,
+              child: const Text('Konfirmasi Gejala'),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
