@@ -24,7 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> fetchGejala() async {
     final gejalaSnapshot = await _thtServices.gejalaDatabase.get();
     if (gejalaSnapshot.exists) {
-      final Map<String, dynamic> data = Map<String, dynamic>.from(gejalaSnapshot.value as Map);
+      final Map<String, dynamic> data =
+          Map<String, dynamic>.from(gejalaSnapshot.value as Map);
       final Map<String, String> loadedGejala = {};
       data.forEach((key, value) {
         if (value is Map) {
@@ -48,7 +49,9 @@ class _HomeScreenState extends State<HomeScreen> {
           title: const Text("Hasil Diagnosa"),
           content: const Text("Tidak ditemukan penyakit yang cocok."),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK")),
           ],
         ),
       );
@@ -59,7 +62,9 @@ class _HomeScreenState extends State<HomeScreen> {
           title: const Text("Hasil Diagnosa"),
           content: Text("Penyakit yang cocok:\n\n${result.join('\n')}"),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK")),
           ],
         ),
       );
