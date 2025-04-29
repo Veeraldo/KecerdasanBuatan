@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:kecerdasanbuatan/screens/home_screen.dart';
-import 'firebase_options.dart';
+import 'package:kecerdasanbuatan/screens/home_screen.dart'; 
+import 'firebase_options.dart'; 
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Memastikan binding widget terinisialisasi
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // Menggunakan FirebaseOptions sesuai platform
+    options: DefaultFirebaseOptions.currentPlatform, 
   );
-  runApp(SistemPakarTHT()); // Menjalankan aplikasi setelah Firebase diinisialisasi
+  runApp(const MyApp());
 }
 
-class SistemPakarTHT extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sistem Pakar THT',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const HomeScreen(), 
+      title: 'Diagnosa THT',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.deepPurple,
+      ),
+      home: const HomeScreen(),
     );
   }
 }
