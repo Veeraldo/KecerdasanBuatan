@@ -20,10 +20,9 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchGejalaAndPenyakit();
   }
 
-  // Mengambil data gejala dan penyakit
   Future<void> fetchGejalaAndPenyakit() async {
     try {
-      // Ambil data gejala
+      //Ambil data 
       final gejalaSnapshot = await FirebaseDatabase.instance.ref('gejala').get();
       final penyakitSnapshot = await FirebaseDatabase.instance.ref('penyakit').get();
 
@@ -45,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       setState(() {
-        // Mengurutkan berdasarkan nomor gejala
+        // Urutan gejala
         gejalaData.sort((a, b) => a['no'].compareTo(b['no']));
         
         _gejalaList = gejalaData;
@@ -53,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print("Error fetching data: $e");
+      print("Error data: $e");
       setState(() {
         _isLoading = false;
       });
