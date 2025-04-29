@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:kecerdasanbuatan/screens/end_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -92,7 +93,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           content: Text("Penyakit yang cocok:\n\n${matchedPenyakit.join('\n')}"),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context, 
+                  MaterialPageRoute(
+                    builder: (context) => const ThankYouScreen(),
+                  ),
+                );
+              },
+              child: const Text("OK"),
+            ),
           ],
         ),
       );
