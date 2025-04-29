@@ -90,4 +90,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'kecerdasanbuatan-4c881.firebasestorage.app',
     measurementId: 'G-HNM5XZVDRM',
   );
+
 }

@@ -22,41 +22,43 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Mengambil data gejala dan penyakit
   Future<void> fetchGejalaAndPenyakit() async {
-  try {
-    // Ambil data gejala
-    final gejalaSnapshot = await FirebaseDatabase.instance.ref('gejala').get();
-    final penyakitSnapshot = await FirebaseDatabase.instance.ref('penyakit').get();
+    try {
+      // Ambil data gejala
+      final gejalaSnapshot = await FirebaseDatabase.instance.ref('gejala').get();
+      final penyakitSnapshot = await FirebaseDatabase.instance.ref('penyakit').get();
 
-    List<Map<String, dynamic>> gejalaData = [];
-    List<Map<String, dynamic>> penyakitData = [];
+      List<Map<String, dynamic>> gejalaData = [];
+      List<Map<String, dynamic>> penyakitData = [];
 
-    if (gejalaSnapshot.value != null) {
-      final Map<dynamic, dynamic> gejalaDataMap = gejalaSnapshot.value as Map<dynamic, dynamic>;
-      gejalaData = gejalaDataMap.entries.map((entry) {
-        return Map<String, dynamic>.from(entry.value);
-      }).toList();
+      if (gejalaSnapshot.value != null) {
+        final Map<dynamic, dynamic> gejalaDataMap = gejalaSnapshot.value as Map<dynamic, dynamic>;
+        gejalaData = gejalaDataMap.entries.map((entry) {
+          return Map<String, dynamic>.from(entry.value);
+        }).toList();
+      }
+
+      if (penyakitSnapshot.value != null) {
+        final Map<dynamic, dynamic> penyakitDataMap = penyakitSnapshot.value as Map<dynamic, dynamic>;
+        penyakitData = penyakitDataMap.entries.map((entry) {
+          return Map<String, dynamic>.from(entry.value);
+        }).toList();
+      }
+
+      setState(() {
+        // Mengurutkan berdasarkan nomor gejala
+        gejalaData.sort((a, b) => a['no'].compareTo(b['no']));
+        
+        _gejalaList = gejalaData;
+        _penyakitList = penyakitData;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() {
+        _isLoading = false;
+      });
     }
-
-    if (penyakitSnapshot.value != null) {
-      final Map<dynamic, dynamic> penyakitDataMap = penyakitSnapshot.value as Map<dynamic, dynamic>;
-      penyakitData = penyakitDataMap.entries.map((entry) {
-        return Map<String, dynamic>.from(entry.value);
-      }).toList();
-    }
-
-    setState(() {
-      _gejalaList = gejalaData;
-      _penyakitList = penyakitData;
-      _isLoading = false;
-    });
-  } catch (e) {
-    print("Error fetching data: $e");
-    setState(() {
-      _isLoading = false;
-    });
   }
-}
-
 
   void _confirmSelection() {
     List<String> matchedPenyakit = [];
@@ -115,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 final namaGejala = gejala['gejala_penyakit'] ?? 'Gejala tidak diketahui';
 
                 return CheckboxListTile(
-                  title: Text(namaGejala),
+                  title: Text('Gejala $noGejala: $namaGejala'),
                   value: _selectedGejala.contains(noGejala),
                   onChanged: (bool? value) {
                     setState(() {
