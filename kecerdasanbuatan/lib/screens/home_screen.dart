@@ -20,34 +20,49 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchGejalaAndPenyakit();
   }
 
-  // Fungsi untuk mengambil data gejala dan penyakit
-  Future<void> fetchGejalaAndPenyakit() async {
-    try {
-      // Ambil data gejala
-      final gejalaSnapshot = await FirebaseDatabase.instance.ref('gejala').get();
-      final Map<dynamic, dynamic> gejalaDataMap = gejalaSnapshot.value as Map<dynamic, dynamic>;
-
-      // Convert the LinkedMap to List<Map<String, dynamic>>
-      final List<Map<String, dynamic>> gejalaData = gejalaDataMap.entries.map((entry) {
-        return Map<String, dynamic>.from(entry.value);
-      }).toList();
-
-      // Ambil data penyakit
-      final penyakitSnapshot = await FirebaseDatabase.instance.ref('penyakit').get();
-      final Map<dynamic, dynamic> penyakitDataMap = penyakitSnapshot.value as Map<dynamic, dynamic>;
-
-      // Convert the LinkedMap to List<Map<String, dynamic>>
-      final List<Map<String, dynamic>> penyakitData = penyakitDataMap.entries.map((entry) {
-        return Map<String, dynamic>.from(entry.value);
-      }).toList();
-
+  Future<void> fetchGejala() async {
+    final gejalaSnapshot = await _thtServices.gejalaDatabase.get();
+    if (gejalaSnapshot.exists) {
+      final Map<String, dynamic> data = Map<String, dynamic>.from(gejalaSnapshot.value as Map);
+      final Map<String, String> loadedGejala = {};
+      data.forEach((key, value) {
+        if (value is Map) {
+          loadedGejala[key] = value['gejala_penyakit'] ?? '';
+        }
+      });
       setState(() {
         _gejalaList = gejalaData;
         _penyakitList = penyakitData;
         _isLoading = false;
       });
-    } catch (e) {
-      print("Error fetching data: $e");
+    }
+  }
+
+  void _confirmSelection() async {
+    final result = await _thtServices.findPenyakitByGejala(_selectedGejala);
+
+    if (result.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Hasil Diagnosa"),
+          content: const Text("Tidak ditemukan penyakit yang cocok."),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
+          ],
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Hasil Diagnosa"),
+          content: Text("Penyakit yang cocok:\n\n${result.join('\n')}"),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
+          ],
+        ),
+      );
     }
   }
 

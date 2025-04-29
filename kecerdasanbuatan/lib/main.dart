@@ -16,10 +16,8 @@ class SistemPakarTHT extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sistem Pakar THT',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: HomeScreen(), // Menampilkan HomeScreen setelah Firebase selesai inisialisasi
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const HomeScreen(), 
     );
   }
 }
