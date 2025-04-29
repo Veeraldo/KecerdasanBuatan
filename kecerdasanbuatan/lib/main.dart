@@ -17,12 +17,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+<<<<<<< HEAD
       title: 'Diagnosa THT',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
       ),
       home: const HomeScreen(),
+=======
+      title: 'Sistem Pakar THT',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const HomeScreen(), 
+>>>>>>> 3121365b8e5def2f80a60ec957e925bf9e7f025a
     );
   }
 }

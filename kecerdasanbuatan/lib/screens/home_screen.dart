@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kecerdasanbuatan/services/THT_service.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -9,39 +9,65 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final THTServices _thtServices = THTServices();
-
-  Map<String, String> _allGejala = {}; // key: gejala_x, value: nama gejala
-  List<String> _selectedGejala = []; // Yang dipilih user
+  List<Map<String, dynamic>> _gejalaList = [];
+  List<Map<String, dynamic>> _penyakitList = [];
+  List<String> _selectedGejala = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    fetchGejala();
+    fetchGejalaAndPenyakit();
   }
 
-  Future<void> fetchGejala() async {
-    final gejalaSnapshot = await _thtServices.gejalaDatabase.get();
-    if (gejalaSnapshot.exists) {
-      final Map<String, dynamic> data = Map<String, dynamic>.from(gejalaSnapshot.value as Map);
-      final Map<String, String> loadedGejala = {};
-      data.forEach((key, value) {
-        if (value is Map) {
-          loadedGejala[key] = value['gejala_penyakit'] ?? '';
-        }
-      });
-      setState(() {
-        _allGejala = loadedGejala;
-        _isLoading = false;
-      });
+  // Mengambil data gejala dan penyakit
+  Future<void> fetchGejalaAndPenyakit() async {
+  try {
+    // Ambil data gejala
+    final gejalaSnapshot = await FirebaseDatabase.instance.ref('gejala').get();
+    final penyakitSnapshot = await FirebaseDatabase.instance.ref('penyakit').get();
+
+    List<Map<String, dynamic>> gejalaData = [];
+    List<Map<String, dynamic>> penyakitData = [];
+
+    if (gejalaSnapshot.value != null) {
+      final Map<dynamic, dynamic> gejalaDataMap = gejalaSnapshot.value as Map<dynamic, dynamic>;
+      gejalaData = gejalaDataMap.entries.map((entry) {
+        return Map<String, dynamic>.from(entry.value);
+      }).toList();
     }
+
+    if (penyakitSnapshot.value != null) {
+      final Map<dynamic, dynamic> penyakitDataMap = penyakitSnapshot.value as Map<dynamic, dynamic>;
+      penyakitData = penyakitDataMap.entries.map((entry) {
+        return Map<String, dynamic>.from(entry.value);
+      }).toList();
+    }
+
+    setState(() {
+      _gejalaList = gejalaData;
+      _penyakitList = penyakitData;
+      _isLoading = false;
+    });
+  } catch (e) {
+    print("Error fetching data: $e");
+    setState(() {
+      _isLoading = false;
+    });
   }
+}
 
-  void _confirmSelection() async {
-    final result = await _thtServices.findPenyakitByGejala(_selectedGejala);
 
-    if (result.isEmpty) {
+  void _confirmSelection() {
+    List<String> matchedPenyakit = [];
+    for (var penyakit in _penyakitList) {
+      List<String> gejalaPenyakit = List<String>.from(penyakit['gejala_penyakit']);
+      if (_selectedGejala.every((gejalaId) => gejalaPenyakit.contains("gejala_$gejalaId"))) {
+        matchedPenyakit.add(penyakit['nama_penyakit']);
+      }
+    }
+
+    if (matchedPenyakit.isEmpty) {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -57,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context: context,
         builder: (_) => AlertDialog(
           title: const Text("Hasil Diagnosa"),
-          content: Text("Penyakit yang cocok:\n\n${result.join('\n')}"),
+          content: Text("Penyakit yang cocok:\n\n${matchedPenyakit.join('\n')}"),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
           ],
@@ -81,22 +107,27 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           Expanded(
-            child: ListView(
-              children: _allGejala.entries.map((entry) {
+            child: ListView.builder(
+              itemCount: _gejalaList.length,
+              itemBuilder: (context, index) {
+                final gejala = _gejalaList[index];
+                final noGejala = gejala['no'].toString();
+                final namaGejala = gejala['gejala_penyakit'] ?? 'Gejala tidak diketahui';
+
                 return CheckboxListTile(
-                  title: Text(entry.value),
-                  value: _selectedGejala.contains(entry.key),
+                  title: Text(namaGejala),
+                  value: _selectedGejala.contains(noGejala),
                   onChanged: (bool? value) {
                     setState(() {
                       if (value == true) {
-                        _selectedGejala.add(entry.key);
+                        _selectedGejala.add(noGejala);
                       } else {
-                        _selectedGejala.remove(entry.key);
+                        _selectedGejala.remove(noGejala);
                       }
                     });
                   },
                 );
-              }).toList(),
+              },
             ),
           ),
           Padding(
@@ -105,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: _confirmSelection,
               child: const Text('Konfirmasi Gejala'),
             ),
-          )
+          ),
         ],
       ),
     );
