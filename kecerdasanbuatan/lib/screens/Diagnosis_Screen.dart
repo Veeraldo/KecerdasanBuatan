@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:kecerdasanbuatan/screens/home_screen.dart'; // Import HomeScreen
+import 'package:kecerdasanbuatan/screens/Penyakit_Screen.dart';
 
-class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
+class DiagnosisScreen extends StatefulWidget {
+  const DiagnosisScreen({Key? key}) : super(key: key);
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  State<DiagnosisScreen> createState() => _DiagnosisScreenState();
 }
-
-class _SearchScreenState extends State<SearchScreen> {
+class _DiagnosisScreenState extends State<DiagnosisScreen> {
   List<Map<String, dynamic>> _gejalaList = [];
   List<Map<String, dynamic>> _penyakitList = [];
   List<String> _selectedGejala = [];
@@ -187,7 +186,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
                     elevation: 4,
-                    color: const Color(0xFF4A90E2), // Tetap biru
+                    color: const Color(0xFF4A90E2), 
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Theme(
@@ -245,8 +244,8 @@ class _SearchScreenState extends State<SearchScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home, color: Color(0xFF2C3E50)),
-            label: 'Home',
+            icon: Icon(Icons.monitor_heart_outlined, color: Color(0xFF2C3E50)),
+            label: 'Penyakit',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.medical_information_outlined, color: Color(0xFF2C3E50)),
@@ -258,7 +257,7 @@ class _SearchScreenState extends State<SearchScreen> {
           if (index == 0) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              MaterialPageRoute(builder: (context) => const PenyakitScreen()),
             );
           }
         },
