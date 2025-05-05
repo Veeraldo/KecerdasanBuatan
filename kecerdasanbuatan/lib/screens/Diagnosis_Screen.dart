@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:kecerdasanbuatan/screens/home_screen.dart'; // Import HomeScreen
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -121,16 +122,22 @@ class _SearchScreenState extends State<SearchScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 for (int i = 0; i < matchedPenyakit.length; i++) ...[
-                  Text('🦠 ${matchedPenyakit[i]}',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2C3E50))),
+                  Text(
+                    '🦠 ${matchedPenyakit[i]}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+                  ),
                   const SizedBox(height: 4),
-                  const Text('📋 Gejala terkait:',
-                      style: TextStyle(color: Color(0xFF2C3E50))),
-                  ...matchedGejala[i]
-                      .map((g) => Text('• $g',
-                          style: const TextStyle(color: Color(0xFF2C3E50)))),
+                  const Text(
+                    '📋 Gejala terkait:',
+                    style: TextStyle(color: Color(0xFF2C3E50)),
+                  ),
+                  ...matchedGejala[i].map(
+                    (g) => Text(
+                      '• $g',
+                      style: const TextStyle(color: Color(0xFF2C3E50)),
+                    ),
+                  ),
                   if (i < matchedPenyakit.length - 1) const Divider(),
                   const SizedBox(height: 8),
                 ],
@@ -228,12 +235,33 @@ class _SearchScreenState extends State<SearchScreen> {
                         borderRadius: BorderRadius.circular(30)),
                   ),
                   child: const Text('Konfirmasi Gejala',
-                      style: TextStyle(fontSize: 18, color: Colors.white)),
+                      style: TextStyle(fontSize: 18, color: Color(0xFF2C3E50))),
                 ),
               ),
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home, color: Color(0xFF2C3E50)),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.medical_information_outlined, color: Color(0xFF2C3E50)),
+            label: 'Diagnosis',
+          ),
+        ],
+        currentIndex: 1,
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+          }
+        },
       ),
     );
   }

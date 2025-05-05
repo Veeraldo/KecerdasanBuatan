@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kecerdasanbuatan/screens/Search_screen.dart';
+import 'package:kecerdasanbuatan/screens/Diagnosis_Screen.dart';
+import 'package:kecerdasanbuatan/screens/Penyakit_Screen.dart';
 
 
 class WelcomeScreen extends StatelessWidget {
@@ -45,7 +46,7 @@ class WelcomeScreen extends StatelessWidget {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (context) => const SearchScreen()
+        builder: (context) => const DiagnosisScreen()
       ), 
       (Route<dynamic> route) => false,
     );
@@ -53,7 +54,7 @@ class WelcomeScreen extends StatelessWidget {
   child: const Text(
     'Mulai Diagnosa',
     style: TextStyle(
-      color: Color(0xFF2C3E50), // Pastikan ini HEX yang tepat
+      color: Color(0xFF2C3E50), 
       fontSize: 18, 
       fontWeight: FontWeight.bold,
     ),
