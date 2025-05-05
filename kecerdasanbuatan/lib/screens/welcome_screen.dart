@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import 'package:kecerdasanbuatan/screens/Search_screen.dart';
+
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
@@ -7,7 +8,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.deepPurple.shade100,
+      backgroundColor: Color(0xFFFAFAFA),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -17,7 +18,6 @@ class WelcomeScreen extends StatelessWidget {
               const Icon(
                 Icons.medical_services,
                 size: 100,
-                color: Colors.deepPurple,
               ),
               const SizedBox(height: 20),
               const Text(
@@ -25,37 +25,42 @@ class WelcomeScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
+                  color: Color(0xFF2C3E50)
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 206, 182, 249),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32, 
-                    vertical: 16
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 18, 
-                    fontWeight: FontWeight.bold
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const HomeScreen()
-                    ), 
-                    (Route<dynamic> route) => false,
-                  );
-                },
-                child: const Text('Mulai Diagnosa'),
-              ),
+             ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: const Color(0xFF4A90E2),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 32, 
+      vertical: 16
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(30),
+    ),
+  ),
+  onPressed: () {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SearchScreen()
+      ), 
+      (Route<dynamic> route) => false,
+    );
+  },
+  child: const Text(
+    'Mulai Diagnosa',
+    style: TextStyle(
+      color: Color(0xFF2C3E50), // Pastikan ini HEX yang tepat
+      fontSize: 18, 
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+)
+
+
             ],
           ),
         ),
