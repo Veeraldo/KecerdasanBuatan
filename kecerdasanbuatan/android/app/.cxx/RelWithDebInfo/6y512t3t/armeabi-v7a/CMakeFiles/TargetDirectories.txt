@@ -1,0 +1,2 @@
+C:/Users/lenovo/OneDrive/Documents/Kuliah/Kecerdasan Buatan/KecerdasanBuatan/kecerdasanbuatan/android/app/.cxx/RelWithDebInfo/6y512t3t/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/lenovo/OneDrive/Documents/Kuliah/Kecerdasan Buatan/KecerdasanBuatan/kecerdasanbuatan/android/app/.cxx/RelWithDebInfo/6y512t3t/armeabi-v7a/CMakeFiles/rebuild_cache.dir
