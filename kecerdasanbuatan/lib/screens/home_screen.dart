@@ -23,37 +23,37 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> fetchGejalaAndPenyakit() async {
     try {
-      //Ambil data 
-      final gejalaSnapshot = await FirebaseDatabase.instance.ref('gejala').get();
-      final penyakitSnapshot = await FirebaseDatabase.instance.ref('penyakit').get();
+      final gejalaSnapshot =
+          await FirebaseDatabase.instance.ref('gejala').get();
+      final penyakitSnapshot =
+          await FirebaseDatabase.instance.ref('penyakit').get();
 
-      List<Map<String, dynamic>> gejalaData = [];
-      List<Map<String, dynamic>> penyakitData = [];
-
-      if (gejalaSnapshot.value != null) {
-        final Map<dynamic, dynamic> gejalaDataMap = gejalaSnapshot.value as Map<dynamic, dynamic>;
-        gejalaData = gejalaDataMap.entries.map((entry) {
-          return Map<String, dynamic>.from(entry.value);
-        }).toList();
+      // ambil gejala
+      if (gejalaSnapshot.value is Map) {
+        final Map<dynamic, dynamic> gejalaMap =
+            gejalaSnapshot.value as Map<dynamic, dynamic>;
+        _gejalaList = gejalaMap.entries.map((entry) {
+          final data = Map<String, dynamic>.from(entry.value);
+          return data;
+        }).toList()
+          ..sort((a, b) => a['no'].compareTo(b['no']));
       }
 
-      if (penyakitSnapshot.value != null) {
-        final Map<dynamic, dynamic> penyakitDataMap = penyakitSnapshot.value as Map<dynamic, dynamic>;
-        penyakitData = penyakitDataMap.entries.map((entry) {
-          return Map<String, dynamic>.from(entry.value);
+      // ambil penyakit
+      if (penyakitSnapshot.value is Map) {
+        final Map<dynamic, dynamic> penyakitMap =
+            penyakitSnapshot.value as Map<dynamic, dynamic>;
+        _penyakitList = penyakitMap.entries.map((entry) {
+          final data = Map<String, dynamic>.from(entry.value);
+          return data;
         }).toList();
       }
 
       setState(() {
-        // Urutan gejala
-        gejalaData.sort((a, b) => a['no'].compareTo(b['no']));
-        
-        _gejalaList = gejalaData;
-        _penyakitList = penyakitData;
         _isLoading = false;
       });
     } catch (e) {
-      print("Error data: $e");
+      debugPrint('Error saat ambil data: $e');
       setState(() {
         _isLoading = false;
       });
@@ -61,11 +61,33 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _confirmSelection() {
-    List<String> matchedPenyakit = [];
+    final List<String> matchedPenyakit = [];
+    final List<List<String>> matchedGejala = [];
+
     for (var penyakit in _penyakitList) {
-      List<String> gejalaPenyakit = List<String>.from(penyakit['gejala_penyakit']);
-      if (_selectedGejala.every((gejalaId) => gejalaPenyakit.contains("gejala_$gejalaId"))) {
+      final raw = penyakit['gejala_penyakit'];
+      List<String> gejalaIds = [];
+
+      if (raw is Map) {
+        gejalaIds = raw.values.map((e) => e.toString()).toList();
+      } else if (raw is List) {
+        gejalaIds = raw.map((e) => e.toString()).toList();
+      }
+
+      final selectedFull = _selectedGejala.map((id) => 'gejala_$id');
+
+      if (selectedFull.every((id) => gejalaIds.contains(id))) {
         matchedPenyakit.add(penyakit['nama_penyakit']);
+
+        final names = gejalaIds.map((gid) {
+          final g = _gejalaList.firstWhere(
+            (item) => 'gejala_${item['no']}' == gid,
+            orElse: () => {},
+          );
+          return g.isNotEmpty ? g['gejala_penyakit'] as String : gid;
+        }).toList();
+
+        matchedGejala.add(names);
       }
     }
 
@@ -73,10 +95,13 @@ class _HomeScreenState extends State<HomeScreen> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text("Hasil Diagnosa"),
-          content: const Text("Tidak ditemukan penyakit yang cocok."),
+          title: const Text('Hasil Diagnosa'),
+          content: const Text('Tidak ditemukan penyakit yang cocok.'),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
           ],
         ),
       );
@@ -84,25 +109,34 @@ class _HomeScreenState extends State<HomeScreen> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Hasil Diagnosa', textAlign: TextAlign.center),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (int i = 0; i < matchedPenyakit.length; i++) ...[
+                  Text('🦠 ${matchedPenyakit[i]}',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  const Text('📋 Gejala terkait:'),
+                  ...matchedGejala[i].map((g) => Text('• $g')),
+                  if (i < matchedPenyakit.length - 1) const Divider(),
+                  const SizedBox(height: 8),
+                ],
+              ],
+            ),
           ),
-          title: const Text(
-            "Hasil Diagnosa",
-            textAlign: TextAlign.center,
-          ),
-          content: Text("Penyakit yang cocok:\n\n${matchedPenyakit.join('\n')}"),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pushReplacement(
-                  context, 
-                  MaterialPageRoute(
-                    builder: (context) => const ThankYouScreen(),
-                  ),
+                  context,
+                  MaterialPageRoute(builder: (_) => const ThankYouScreen()),
                 );
               },
-              child: const Text("OK"),
+              child: const Text('OK'),
             ),
           ],
         ),
@@ -113,13 +147,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(
-            color: Colors.deepPurple[100],
-            strokeWidth: 5,
-          ),
-        ),
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -127,8 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Diagnosa Penyakit THT'),
         centerTitle: true,
-        elevation: 0,
-        backgroundColor: const Color.fromARGB(255, 207, 180, 253),
+        backgroundColor: const Color(0xFFDFA3FF),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -145,38 +173,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: _gejalaList.length,
                 itemBuilder: (context, index) {
                   final gejala = _gejalaList[index];
-                  final noGejala = gejala['no'].toString();
-                  final namaGejala = gejala['gejala_penyakit'] ?? 'Gejala tidak diketahui';
-        
+                  final no = gejala['no'].toString();
+                  final text =
+                      gejala['gejala_penyakit'] ?? 'Gejala tidak diketahui';
                   return Card(
-                    elevation: 4,
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 8, 
-                      horizontal: 10
-                    ),
+                    margin:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)
-                    ),
+                        borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12, 
-                        vertical: 8
-                      ),
+                      padding: const EdgeInsets.all(8.0),
                       child: CheckboxListTile(
-                        title: Text(
-                          'Gejala $noGejala: $namaGejala',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500
-                          ),
-                        ),
-                        value: _selectedGejala.contains(noGejala),
+                        title: Text('Gejala $no: $text'),
+                        value: _selectedGejala.contains(no),
                         activeColor: Colors.deepPurple,
-                        onChanged: (bool? value) {
+                        onChanged: (v) {
                           setState(() {
-                            if (value == true) {
-                              _selectedGejala.add(noGejala);
+                            if (v == true) {
+                              _selectedGejala.add(no);
                             } else {
-                              _selectedGejala.remove(noGejala);
+                              _selectedGejala.remove(no);
                             }
                           });
                         },
@@ -192,19 +209,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple[100],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)
-                    ),
-                    elevation: 5,
-                    textStyle: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold
-                    ),
-                  ),
                   onPressed: _confirmSelection,
-                  child: const Text('Konfirmasi Gejala'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
+                  ),
+                  child: const Text('Konfirmasi Gejala',
+                      style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
             ),
