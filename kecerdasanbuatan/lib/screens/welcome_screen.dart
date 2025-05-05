@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kecerdasanbuatan/screens/Diagnosis_Screen.dart';
 import 'package:kecerdasanbuatan/screens/Penyakit_Screen.dart';
 
+
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
 
@@ -23,40 +24,44 @@ class WelcomeScreen extends StatelessWidget {
               const Text(
                 'Diagnosa Penyakit THT',
                 style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2C3E50)),
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2C3E50)
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4A90E2),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const DiagnosisScreen(
-                              penyakit: {},
-                            )),
-                    (Route<dynamic> route) => false,
-                  );
-                },
-                child: const Text(
-                  'Mulai Diagnosa',
-                  style: TextStyle(
-                    color: Color(0xFF2C3E50),
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              )
+             ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: const Color(0xFF4A90E2),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 32, 
+      vertical: 16
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(30),
+    ),
+  ),
+  onPressed: () {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PenyakitScreen()
+      ), 
+      (Route<dynamic> route) => false,
+    );
+  },
+  child: const Text(
+    'Mulai Diagnosa',
+    style: TextStyle(
+      color: Color(0xFF2C3E50), 
+      fontSize: 18, 
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+)
+
+
             ],
           ),
         ),

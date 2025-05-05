@@ -131,7 +131,7 @@ class _PenyakitScreenState extends State<PenyakitScreen> {
                       nama,
                       style: const TextStyle(
                         fontSize: 18,
-                        color: Colors.white,
+                        color: Color(0xFF2C3E50),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -142,26 +142,7 @@ class _PenyakitScreenState extends State<PenyakitScreen> {
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _confirmSelection,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4A90E2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Text(
-                  'Kembali ke Diagnosis',
-                  style: TextStyle(fontSize: 18, color: Color(0xFF2C3E50)),
-                ),
-              ),
-            ),
-          ),
+
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
