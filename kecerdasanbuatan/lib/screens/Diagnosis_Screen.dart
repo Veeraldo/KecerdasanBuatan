@@ -3,8 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:kecerdasanbuatan/screens/Penyakit_Screen.dart';
 
 class DiagnosisScreen extends StatefulWidget {
-  const DiagnosisScreen({Key? key, required Map<String, dynamic> penyakit})
-      : super(key: key);
+  const DiagnosisScreen({Key? key, required Map penyakit}) : super(key: key);
 
   @override
   State<DiagnosisScreen> createState() => _DiagnosisScreenState();
@@ -101,8 +100,8 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child:
-                  const Text('OK', style: TextStyle(color: Color(0xFF4A90E2))),
+              child: const Text('OK',
+                  style: TextStyle(color: Color(0xFF4A90E2))),
             ),
           ],
         ),
@@ -188,7 +187,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
                     elevation: 4,
-                    color: const Color(0xFF4A90E2),
+                    color: const Color(0xFF4A90E2), 
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Theme(
@@ -198,7 +197,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
                         child: CheckboxListTile(
                           controlAffinity: ListTileControlAffinity.trailing,
                           title: Text(
-                            'Gejala $no: $text',
+                            '$text',
                             style: const TextStyle(
                               color: Color(0xFF2C3E50),
                               fontWeight: FontWeight.w600,
@@ -250,8 +249,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
             label: 'Penyakit',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.medical_information_outlined,
-                color: Color(0xFF2C3E50)),
+            icon: Icon(Icons.medical_information_outlined, color: Color(0xFF2C3E50)),
             label: 'Diagnosis',
           ),
         ],
