@@ -233,7 +233,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
                   child: CheckboxListTile(
                     title: Text(
                       label,
-                      style: const TextStyle(fontWeight: FontWeight.w500, color: const Color(0xFF4CAF50),),
+                      style: const TextStyle(fontWeight: FontWeight.w500, color: Color(0xFF2C3E50),),
                     ),
                     value: _selectedGejala.contains(no),
                     activeColor: const Color(0xFF4CAF50),

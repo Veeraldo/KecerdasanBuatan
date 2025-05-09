@@ -28,7 +28,7 @@ class _PenyakitDetailScreenState extends State<PenyakitDetailScreen> {
     final prompt = '''
 Buat penjelasan singkat dan mudah dipahami mengenai penyakit "${widget.penyakit}". 
 Sertakan, gejala umum, penyebab utama, dan saran penanganan awal. 
-Gunakan bahasa Indonesia yang lebih rapi dan akurat. Fokus pada informasi yang berguna dan detail dan akurat. tidak usah menampilkan kalimat tambahanmu cukup informasi saja
+Gunakan bahasa Indonesia yang lebih rapi dan akurat serta berikan jeda untuk setiap penjelasan. Fokus pada informasi yang berguna dan detail. tidak usah menampilkan kalimat tambahanmu cukup informasi saja, 
 ''';
 
     final body = jsonEncode({
