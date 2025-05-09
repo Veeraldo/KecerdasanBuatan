@@ -57,28 +57,66 @@ class _PenyakitScreenState extends State<PenyakitScreen> {
   }
 
   void showGejalaDialog(List<String> gejalaIds) {
-    final List gejalaTeks = gejalaIds.map((gid) {
-      final match = _gejalaList.where((g) => g['id'] == gid);
-      return match.isNotEmpty ? match.first['gejala_penyakit'] : gid;
-    }).toList();
+  final List gejalaTeks = gejalaIds.map((gid) {
+    final match = _gejalaList.where((g) => g['id'] == gid);
+    return match.isNotEmpty ? match.first['gejala_penyakit'] : gid;
+  }).toList();
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("🩺 Gejala Terkait"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: gejalaTeks.map((g) => Text("• $g")).toList(),
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      backgroundColor: const Color(0xFFF1F8E9),  
+      title: const Text(
+        "🩺 Gejala Terkait",
+        style: TextStyle(
+          color: Color(0xFF388E3C),
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
         ),
-        actions: [
-          TextButton(
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: gejalaTeks.map((g) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 18), // Ikon centang hijau
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    g,
+                    style: const TextStyle(
+                      color: Color(0xFF2C3E50),
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(
             onPressed: () => Navigator.pop(context),
             child: const Text("Tutup"),
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white, backgroundColor: const Color(0xFF4CAF50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   void _confirmSelection() {
     Navigator.push(
@@ -99,9 +137,13 @@ class _PenyakitScreenState extends State<PenyakitScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Daftar Penyakit"),
-        backgroundColor: const Color(0xFFFAFAFA),
-        elevation: 0,
+        title: const Text(
+          "Daftar Penyakit",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: const Color(0xFF4CAF50),
+        elevation: 4,
+        centerTitle: true,
       ),
       body: Column(
         children: [
@@ -121,12 +163,14 @@ class _PenyakitScreenState extends State<PenyakitScreen> {
                 }
 
                 return Card(
-                  color: const Color(0xFF4A90E2),
-                  margin: const EdgeInsets.all(10),
+                  elevation: 5,
+                  margin: const EdgeInsets.all(12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  color: Colors.white,
                   child: ListTile(
+                    contentPadding: const EdgeInsets.all(16),
                     title: Text(
                       nama,
                       style: const TextStyle(
@@ -135,29 +179,38 @@ class _PenyakitScreenState extends State<PenyakitScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    trailing: const Icon(Icons.visibility, color: Colors.white),
+                    subtitle: const Text(
+                      'Klik untuk melihat gejala',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF7D8C8D),
+                      ),
+                    ),
+                    trailing: const Icon(Icons.visibility, color: const Color(0xFF4CAF50),),
                     onTap: () => showGejalaDialog(gejalaIds),
                   ),
                 );
               },
             ),
           ),
-
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.monitor_heart_outlined, color: Color(0xFF2C3E50)),
+            icon: Icon(Icons.monitor_heart_outlined, color: Colors.white),
             label: 'Penyakit',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.medical_information_outlined,
-                color: Color(0xFF2C3E50)),
+                color: Colors.white),
             label: 'Diagnosis',
           ),
         ],
         currentIndex: 0,
+        backgroundColor: const Color(0xFF4CAF50),
+        selectedItemColor: Color(0xFFB0BEC5),
+        unselectedItemColor: Color(0xFFB0BEC5),
         onTap: (index) {
           if (index == 1) {
             Navigator.pushReplacement(

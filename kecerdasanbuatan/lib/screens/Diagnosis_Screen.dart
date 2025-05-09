@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:kecerdasanbuatan/screens/Penyakit_Screen.dart';
+import 'package:kecerdasanbuatan/screens/penyakitdetail_screen.dart';
 
 class DiagnosisScreen extends StatefulWidget {
   const DiagnosisScreen({Key? key, required Map penyakit}) : super(key: key);
@@ -18,135 +19,180 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
   @override
   void initState() {
     super.initState();
-    fetchGejalaAndPenyakit();
+    fetchGejalaDanPenyakit();
   }
 
-  Future<void> fetchGejalaAndPenyakit() async {
+  Future<void> fetchGejalaDanPenyakit() async {
     try {
-      final gejalaSnapshot =
-          await FirebaseDatabase.instance.ref('gejala').get();
-      final penyakitSnapshot =
-          await FirebaseDatabase.instance.ref('penyakit').get();
+      final gejalaSnapshot = await FirebaseDatabase.instance.ref('gejala').get();
+      final penyakitSnapshot = await FirebaseDatabase.instance.ref('penyakit').get();
 
       if (gejalaSnapshot.value is Map) {
-        final Map<dynamic, dynamic> gejalaMap =
-            gejalaSnapshot.value as Map<dynamic, dynamic>;
-        _gejalaList = gejalaMap.entries.map((entry) {
-          final data = Map<String, dynamic>.from(entry.value);
+        final Map<dynamic, dynamic> gejalaMap = gejalaSnapshot.value as Map<dynamic, dynamic>;
+        _gejalaList = gejalaMap.entries.map((e) {
+          final data = Map<String, dynamic>.from(e.value);
           return data;
         }).toList()
           ..sort((a, b) => a['no'].compareTo(b['no']));
       }
 
       if (penyakitSnapshot.value is Map) {
-        final Map<dynamic, dynamic> penyakitMap =
-            penyakitSnapshot.value as Map<dynamic, dynamic>;
-        _penyakitList = penyakitMap.entries.map((entry) {
-          final data = Map<String, dynamic>.from(entry.value);
+        final Map<dynamic, dynamic> penyakitMap = penyakitSnapshot.value as Map<dynamic, dynamic>;
+        _penyakitList = penyakitMap.entries.map((e) {
+          final data = Map<String, dynamic>.from(e.value);
           return data;
         }).toList();
       }
 
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     } catch (e) {
-      debugPrint('Error saat ambil data: $e');
-      setState(() {
-        _isLoading = false;
-      });
+      debugPrint('Gagal ambil data: $e');
+      setState(() => _isLoading = false);
     }
   }
 
-  void _confirmSelection() {
-    final List<String> matchedPenyakit = [];
-    final List<List<String>> matchedGejala = [];
+  void _diagnosis() {
+    final List<String> hasilPenyakit = [];
+    final List<double> hasilPersen = [];
 
     for (var penyakit in _penyakitList) {
-      final raw = penyakit['gejala_penyakit'];
-      List<String> gejalaIds = [];
+      List<String> gejalaPenyakit = [];
 
+      final raw = penyakit['gejala_penyakit'];
       if (raw is Map) {
-        gejalaIds = raw.values.map((e) => e.toString()).toList();
+        gejalaPenyakit = raw.values.map((e) => e.toString()).toList();
       } else if (raw is List) {
-        gejalaIds = raw.map((e) => e.toString()).toList();
+        gejalaPenyakit = raw.map((e) => e.toString()).toList();
       }
 
       final selectedFull = _selectedGejala.map((id) => 'gejala_$id');
+      final cocok = selectedFull.where((id) => gejalaPenyakit.contains(id)).toList();
+      final persen = (cocok.length / gejalaPenyakit.length) * 100;
 
-      if (selectedFull.every((id) => gejalaIds.contains(id))) {
-        matchedPenyakit.add(penyakit['nama_penyakit']);
-
-        final names = gejalaIds.map((gid) {
-          final g = _gejalaList.firstWhere(
-            (item) => 'gejala_${item['no']}' == gid,
-            orElse: () => {},
-          );
-          return g.isNotEmpty ? g['gejala_penyakit'] as String : gid;
-        }).toList();
-
-        matchedGejala.add(names);
+      if (cocok.isNotEmpty) {
+        hasilPenyakit.add(penyakit['nama_penyakit']);
+        hasilPersen.add(persen);
       }
     }
 
-    if (matchedPenyakit.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Hasil Diagnosa',
-              style: TextStyle(color: Color(0xFF2C3E50))),
-          content: const Text('Tidak ditemukan penyakit yang cocok.',
-              style: TextStyle(color: Color(0xFF2C3E50))),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK',
-                  style: TextStyle(color: Color(0xFF4A90E2))),
-            ),
-          ],
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Hasil Diagnosis',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: const Color(0xFF4CAF50), fontWeight: FontWeight.bold),
         ),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text(
-            'Hasil Diagnosa',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFF2C3E50)),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (int i = 0; i < matchedPenyakit.length; i++) ...[
-                  Text(
-                    '🦠 ${matchedPenyakit[i]}',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    '📋 Gejala terkait:',
-                    style: TextStyle(color: Color(0xFF2C3E50)),
-                  ),
-                  ...matchedGejala[i].map(
-                    (g) => Text(
-                      '• $g',
-                      style: const TextStyle(color: Color(0xFF2C3E50)),
-                    ),
-                  ),
-                  if (i < matchedPenyakit.length - 1) const Divider(),
-                  const SizedBox(height: 8),
-                ],
-              ],
-            ),
-          ),
+        content: SingleChildScrollView(
+          child: hasilPenyakit.isEmpty
+              ? const Text("Tidak ada kecocokan gejala dengan penyakit.")
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (int i = 0; i < hasilPenyakit.length; i++) ...[
+                      Text(
+                        '🦠 ${hasilPenyakit[i]}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: const Color(0xFF4CAF50)
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Kecocokan: ${hasilPersen[i].toStringAsFixed(1)}%',
+                        style: const TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      LinearProgressIndicator(
+                        value: hasilPersen[i] / 100,
+                        backgroundColor: Colors.grey[300],
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          hasilPersen[i] >= 70
+                              ? Colors.green
+                              : hasilPersen[i] >= 40
+                                  ? Colors.orange
+                                  : Colors.red,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        '📋 Gejala terkait:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      ...() {
+                        final raw = _penyakitList.firstWhere((p) => p['nama_penyakit'] == hasilPenyakit[i])['gejala_penyakit'];
+                        List<String> gejalaIds = raw is Map
+                            ? raw.values.map((e) => e.toString()).toList()
+                            : raw is List
+                                ? raw.map((e) => e.toString()).toList()
+                                : [];
+
+                        return gejalaIds.map((gid) {
+                          final gejalaData = _gejalaList.firstWhere(
+                            (g) => 'gejala_${g['no']}' == gid,
+                            orElse: () => {},
+                          );
+                          final label = gejalaData.isNotEmpty ? gejalaData['gejala_penyakit'] : gid;
+                          final isSelected = _selectedGejala.contains(gid.replaceAll('gejala_', ''));
+
+                          return Row(
+                            children: [
+                              Icon(
+                                isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                                color: isSelected ? Colors.green : Colors.grey,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  label,
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.green[800] : const Color(0xFF4CAF50)
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList();
+                      }(),
+                      const SizedBox(height: 8),
+                  
+                      TextButton(
+                        onPressed: () {
+                       
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PenyakitDetailScreen(
+                                penyakit: hasilPenyakit[i], 
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Pelajari Lebih Lanjut',
+                          style: TextStyle(color: const Color(0xFF4CAF50)),
+                        ),
+                      ),
+                      if (i < hasilPenyakit.length - 1) const Divider(height: 30),
+                    ],
+                  ],
+                ),
         ),
-      );
-    }
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup', style: TextStyle(color: const Color(0xFF4CAF50),)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -158,111 +204,95 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: const Color(0xFFF1F8E9),
       appBar: AppBar(
-        title: const Text(
-          'Apa Gejala yang Anda Alami?',
-          style: TextStyle(color: Color(0xFF2C3E50)),
-        ),
-        centerTitle: true,
-        backgroundColor: const Color(0xFFFAFAFA),
+        backgroundColor: const Color(0xFF4CAF50),
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF2C3E50)),
-      ),
-      body: Container(
-        color: const Color(0xFFFAFAFA),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: _gejalaList.length,
-                itemBuilder: (context, index) {
-                  final gejala = _gejalaList[index];
-                  final no = gejala['no'].toString();
-                  final text =
-                      gejala['gejala_penyakit'] ?? 'Gejala tidak diketahui';
-                  return Card(
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    elevation: 4,
-                    color: const Color(0xFF4A90E2), 
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Theme(
-                        data: Theme.of(context).copyWith(
-                          unselectedWidgetColor: Colors.white,
-                        ),
-                        child: CheckboxListTile(
-                          controlAffinity: ListTileControlAffinity.trailing,
-                          title: Text(
-                            '$text',
-                            style: const TextStyle(
-                              color: Color(0xFF2C3E50),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          value: _selectedGejala.contains(no),
-                          activeColor: Colors.white,
-                          checkColor: const Color(0xFF4A90E2),
-                          onChanged: (v) {
-                            setState(() {
-                              if (v == true) {
-                                _selectedGejala.add(no);
-                              } else {
-                                _selectedGejala.remove(no);
-                              }
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _confirmSelection,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A90E2),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30)),
-                  ),
-                  child: const Text('Konfirmasi Gejala',
-                      style: TextStyle(fontSize: 18, color: Color(0xFF2C3E50))),
-                ),
-              ),
-            ),
-          ],
+        iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true,
+        title: const Text(
+          'Apa Gejala Anda?',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.monitor_heart_outlined, color: Color(0xFF2C3E50)),
-            label: 'Penyakit',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.medical_information_outlined, color: Color(0xFF2C3E50)),
-            label: 'Diagnosis',
-          ),
-        ],
-        currentIndex: 1,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const PenyakitScreen()),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _gejalaList.length,
+              itemBuilder: (context, index) {
+                final gejala = _gejalaList[index];
+                final no = gejala['no'].toString();
+                final label = gejala['gejala_penyakit'] ?? 'Tidak diketahui';
+
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 4,
+                  color: Colors.white,
+                  child: CheckboxListTile(
+                    title: Text(
+                      label,
+                      style: const TextStyle(fontWeight: FontWeight.w500, color: const Color(0xFF4CAF50),),
+                    ),
+                    value: _selectedGejala.contains(no),
+                    activeColor: const Color(0xFF4CAF50),
+                    onChanged: (val) {
+                      setState(() {
+                        if (val == true) {
+                          _selectedGejala.add(no);
+                        } else {
+                          _selectedGejala.remove(no);
+                        }
+                      });
+                    },
+              ),
             );
-          }
-        },
+          },
+        ),
       ),
-    );
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: _diagnosis,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            ),
+            child: const Text('Diagnosis', style: TextStyle(fontSize: 18, color: Colors.white)),
+          ),
+        ),
+      ),
+    ],
+  ),
+  bottomNavigationBar: BottomNavigationBar(
+    currentIndex: 1,
+    onTap: (index) {
+      if (index == 0) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const PenyakitScreen()),
+        );
+      }
+    },
+    items: const [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.monitor_heart_outlined, color: Colors.white),
+        label: 'Penyakit',
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.medical_information_outlined, color: Colors.white),
+        label: 'Diagnosis',
+      ),
+    ],
+    backgroundColor:  const Color(0xFF4CAF50),
+    selectedItemColor: Color(0xFFB0BEC5),
+    unselectedItemColor: Color(0xFFB0BEC5),
+    type: BottomNavigationBarType.fixed,
+  ),
+);
   }
 }
